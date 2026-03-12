@@ -1,11 +1,10 @@
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config.settings import get_settings
 from app.database.connection import init_db
-from app.database.session import get_db
 from app.routes import api_router
 from app.utils.logging import setup_logging
 
@@ -35,7 +34,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    app.include_router(api_router, prefix=settings.API_PREFIX, dependencies=[Depends(get_db)])
+    app.include_router(api_router, prefix=settings.API_PREFIX)
 
     return app
 
