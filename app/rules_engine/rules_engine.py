@@ -6,7 +6,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Iterable, List, Optional
 
-from app.ai.detection_service import DetectionResult
+from app.ai.types import DetectionResult
 from app.ai.normalization import normalize_label
 
 

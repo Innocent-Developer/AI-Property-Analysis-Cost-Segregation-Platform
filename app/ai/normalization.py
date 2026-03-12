@@ -4,7 +4,7 @@ import json
 from functools import lru_cache
 from pathlib import Path
 
-from app.ai.detection_service import DetectionResult
+from app.ai.types import DetectionResult
 
 
 @lru_cache

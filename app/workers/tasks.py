@@ -12,9 +12,9 @@ from app.ai.detection_service import (
     BaseHighPrecisionDetector,
     BaseOpenVocabularyDetector,
     BaseVisionLanguageRefiner,
-    DetectionResult,
     DetectionService,
 )
+from app.ai.types import DetectionResult
 from app.database.session import AsyncSessionLocal
 from app.financial_engine.engine import AssetInput, compute_financial_breakdown
 from app.models.property import Detection, Image, Property, Report

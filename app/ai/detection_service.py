@@ -1,18 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 from typing import Iterable, List, Sequence, Tuple
 
 import numpy as np
 
 from app.ai.normalization import normalize_detections
+from app.ai.types import DetectionResult
 from app.pipelines.image_preprocessing import preprocess_images_for_detection
-
-
-@dataclass
-class DetectionResult:
-    label: str
-    confidence: float
 
 
 class BaseOpenVocabularyDetector:

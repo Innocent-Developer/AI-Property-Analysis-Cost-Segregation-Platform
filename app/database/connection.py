@@ -18,8 +18,16 @@ async def init_db() -> None:
     """Run database initialization (e.g. create tables for simple setups).
 
     In production, prefer Alembic migrations over create_all.
+    Logs a warning and continues if the database is unreachable (e.g. wrong credentials).
     """
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    except Exception as e:  # e.g. InvalidPasswordError, connection refused
+        import logging
+        logging.getLogger(__name__).warning(
+            "Database initialization skipped (could not connect): %s. "
+            "Set POSTGRES_* in .env and ensure PostgreSQL is running.", e
+        )
 
 

@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ai.detection_service import DetectionResult
+from app.ai.types import DetectionResult
 from app.database.session import get_db
 from app.financial_engine.engine import AssetInput, compute_financial_breakdown
 from app.models.property import Detection, Image, Property, Report
