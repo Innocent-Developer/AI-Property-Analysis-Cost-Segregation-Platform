@@ -54,10 +54,14 @@ async def upload_property_images(
 
         try:
             pil_image = Image.open(io.BytesIO(raw_bytes))
+            pil_image.load()
         except Exception as exc:  # pragma: no cover - defensive
             raise ValueError("Invalid image data.") from exc
 
-        pil_image = pil_image.convert("RGB")
+        try:
+            pil_image = pil_image.convert("RGB")
+        except OSError as exc:
+            raise ValueError("Invalid or corrupted image data.") from exc
         pil_image.thumbnail(MAX_SIZE)
 
         ext = _get_extension(file.filename or "") or ".jpg"

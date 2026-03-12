@@ -1,4 +1,6 @@
+import logging
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
@@ -9,7 +11,7 @@ from app.schemas.property import ImageResponse
 from app.services.image_service import upload_property_images
 from app.workers.tasks import enqueue_full_pipeline
 
-
+logger = logging.getLogger(__name__)
 router = APIRouter(tags=["images"])
 
 
@@ -31,8 +33,18 @@ async def upload_images_for_property(
         status_code = status.HTTP_404_NOT_FOUND if "Property not found" in detail else status.HTTP_400_BAD_REQUEST
         raise HTTPException(status_code=status_code, detail=detail)
 
-    # Kick off background pipeline: AI detection → report generation
-    enqueue_full_pipeline.delay(str(property_id))
+    # Enqueue pipeline in a thread so the request returns immediately (avoids blocking on Redis)
+    def _enqueue():
+        try:
+            enqueue_full_pipeline.delay(str(property_id))
+        except Exception as exc:
+            logger.warning("Celery/Redis unavailable, pipeline not enqueued: %s", exc)
+
+    _executor = getattr(upload_images_for_property, "_executor", None)
+    if _executor is None:
+        _executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="celery_enqueue")
+        upload_images_for_property._executor = _executor  # type: ignore[attr-defined]
+    _executor.submit(_enqueue)
 
     return [ImageResponse.model_validate(img) for img in images]
 

@@ -45,7 +45,8 @@ class Settings(BaseSettings):
     SQLALCHEMY_POOL_SIZE: int = 10
     SQLALCHEMY_MAX_OVERFLOW: int = 20
 
-    # Redis
+    # Redis (set REDIS_URL for full URL e.g. Redis Labs; otherwise REDIS_HOST/PORT/DB/auth are used)
+    REDIS_URL: Optional[str] = None
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
     REDIS_DB: int = 0
@@ -98,6 +99,8 @@ class Settings(BaseSettings):
         )
 
     def redis_dsn(self) -> str:
+        if self.REDIS_URL:
+            return self.REDIS_URL.strip()
         auth = ""
         if self.REDIS_PASSWORD or self.REDIS_USERNAME:
             user = self.REDIS_USERNAME or ""
@@ -106,8 +109,9 @@ class Settings(BaseSettings):
         return f"redis://{auth}{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
 
     def celery_config(self) -> Dict[str, Any]:
-        broker = self.CELERY_BROKER_URL or self.redis_dsn()
-        backend = self.CELERY_RESULT_BACKEND or self.redis_dsn()
+        dsn = self.redis_dsn()
+        broker = self.CELERY_BROKER_URL or dsn
+        backend = self.CELERY_RESULT_BACKEND or dsn
         return {
             "broker_url": broker,
             "result_backend": backend,
