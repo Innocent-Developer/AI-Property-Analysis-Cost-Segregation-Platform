@@ -27,7 +27,8 @@ async def init_db() -> None:
         import logging
         logging.getLogger(__name__).warning(
             "Database initialization skipped (could not connect): %s. "
-            "Set POSTGRES_* in .env and ensure PostgreSQL is running.", e
+            "Create a .env file in the project root with DATABASE_URL=postgresql://... or POSTGRES_* and ensure PostgreSQL is running.",
+            e,
         )
 
 

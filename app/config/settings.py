@@ -1,8 +1,13 @@
 from functools import lru_cache
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from pydantic import AnyUrl, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Load .env from project root (parent of app/) so it works regardless of cwd
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_ENV_FILE = _PROJECT_ROOT / ".env"
 
 
 class PostgresDsn(AnyUrl):
@@ -10,7 +15,11 @@ class PostgresDsn(AnyUrl):
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False)
+    model_config = SettingsConfigDict(
+        env_file=_ENV_FILE if _ENV_FILE.exists() else None,
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+    )
 
     # Application
     APP_NAME: str = "AI Property Analysis & Cost Segregation API"
@@ -25,7 +34,8 @@ class Settings(BaseSettings):
         description="Allowed CORS origins",
     )
 
-    # Database
+    # Database (use DATABASE_URL for full URL, e.g. Render; otherwise POSTGRES_* are used)
+    DATABASE_URL: Optional[str] = None
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str = "postgres"
@@ -52,12 +62,26 @@ class Settings(BaseSettings):
     LOG_JSON: bool = False
 
     def postgres_dsn(self) -> str:
+        if self.DATABASE_URL:
+            url = self.DATABASE_URL.strip()
+            if url.startswith("postgresql://"):
+                return url.replace("postgresql://", "postgresql+psycopg2://", 1)
+            if url.startswith("postgres://"):
+                return url.replace("postgres://", "postgresql+psycopg2://", 1)
+            return url
         return (
             f"postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
     def postgres_async_dsn(self) -> str:
+        if self.DATABASE_URL:
+            url = self.DATABASE_URL.strip()
+            if url.startswith("postgresql://"):
+                return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            if url.startswith("postgres://"):
+                return url.replace("postgres://", "postgresql+asyncpg://", 1)
+            return url
         return (
             f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
