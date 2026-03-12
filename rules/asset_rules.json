@@ -1,0 +1,17 @@
+{
+  "mirror": {
+    "asset_life_years": 5,
+    "category": "personal_property",
+    "description": "Bathroom and wall mirrors treated as 5-year assets."
+  },
+  "cabinet": {
+    "asset_life_years": 5,
+    "category": "personal_property",
+    "description": "Kitchen and bathroom cabinets treated as 5-year assets."
+  },
+  "door": {
+    "asset_life_years": 39,
+    "category": "structural",
+    "description": "Doors treated as 39-year structural components."
+  }
+}

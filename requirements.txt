@@ -1,0 +1,17 @@
+fastapi[all]==0.115.0
+uvicorn[standard]==0.32.0
+SQLAlchemy==2.0.36
+psycopg2-binary==2.9.10
+alembic==1.13.3
+redis==5.2.1
+celery[redis]==5.4.0
+pydantic==2.9.2
+pydantic-settings==2.6.1
+python-dotenv==1.0.1
+loguru==0.7.2
+asyncpg
+Pillow
+opencv-python-headless
+pandas
+openpyxl
+numpy
