@@ -1,0 +1,10 @@
+{
+  "mirror": 150,
+  "cabinet": 500,
+  "door": 800,
+  "sink": 300,
+  "toilet": 400,
+  "flooring": 8,
+  "lighting_fixture": 120,
+  "hvac_unit": 5000
+}

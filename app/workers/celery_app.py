@@ -16,6 +16,14 @@ celery.conf.task_queues = (
     Queue("report_generation"),
 )
 
+# Fault tolerance: retries and ack behavior
+celery.conf.task_acks_late = True
+celery.conf.task_reject_on_worker_lost = True
+celery.conf.task_default_retry_delay = 60
+celery.conf.task_max_retries = 3
+celery.conf.task_serializer = "json"
+celery.conf.result_serializer = "json"
+
 
 @celery.task(name="workers.ping")
 def ping() -> str:

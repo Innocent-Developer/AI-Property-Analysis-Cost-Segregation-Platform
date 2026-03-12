@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Iterable, List
+from typing import Iterable, List, Tuple
+
+from app.financial_engine.cost_tables import get_unit_cost
 
 
 Number = float | int | Decimal
@@ -77,4 +79,17 @@ def compute_financial_breakdown(
         )
 
     return breakdowns
+
+
+def assets_from_deduplicated(
+    deduped: List[Tuple[str, int]],
+    default_unit_cost: Number = 1,
+) -> List[AssetInput]:
+    """Build AssetInput list from (label, quantity) pairs using config cost_tables when available."""
+    result: List[AssetInput] = []
+    for label, quantity in deduped:
+        unit = get_unit_cost(label)
+        cost = Decimal(str(unit)) if unit is not None else _to_decimal(default_unit_cost)
+        result.append(AssetInput(name=label, quantity=quantity, unit_replacement_cost=cost))
+    return result
 

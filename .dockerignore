@@ -1,0 +1,17 @@
+.venv
+venv
+__pycache__
+*.pyc
+.git
+.env
+.env.*
+!.env.example
+*.md
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.log
+storage/properties/*
+storage/reports/*
+!storage/properties/.gitkeep
+!storage/reports/.gitkeep

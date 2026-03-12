@@ -61,6 +61,16 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     LOG_JSON: bool = False
 
+    # Rate limiting (e.g. "200/minute")
+    RATE_LIMIT_DEFAULT: str = "200/minute"
+
+    # Auth (optional; set AUTH_ENABLED=true and JWT_SECRET or API_KEY to enable)
+    AUTH_ENABLED: bool = False
+    JWT_SECRET: Optional[str] = None
+    JWT_ALGORITHM: str = "HS256"
+    API_KEY_HEADER: str = "X-API-Key"
+    API_KEY: Optional[str] = None
+
     def postgres_dsn(self) -> str:
         if self.DATABASE_URL:
             url = self.DATABASE_URL.strip()

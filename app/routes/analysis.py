@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.types import DetectionResult
 from app.database.session import get_db
-from app.financial_engine.engine import AssetInput, compute_financial_breakdown
+from app.financial_engine.engine import assets_from_deduplicated, compute_financial_breakdown
 from app.models.property import Detection, Image, Property, Report
 from app.report_generator.excel_report import generate_excel_report
 from app.rules_engine.deduplication import deduplicate_assets
@@ -79,10 +79,8 @@ async def analyze_property(
     # 6. Classify assets
     asset_classifications = classify_detections(all_detections)
 
-    # 7. Run financial calculations
-    assets_inputs = [
-        AssetInput(name=label, quantity=count, unit_replacement_cost=1) for label, count in deduped
-    ]
+    # 7. Run financial calculations (unit costs from config/cost_tables.json when available)
+    assets_inputs = assets_from_deduplicated(deduped, default_unit_cost=1)
     improvement_basis = property_obj.improvement_basis or 0
     financial_breakdown = compute_financial_breakdown(assets_inputs, improvement_basis=improvement_basis)
 

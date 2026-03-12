@@ -233,6 +233,33 @@ curl -X POST "http://localhost:8000/api/analyze-property/550e8400-e29b-41d4-a716
 
 ---
 
+## 5. Reports
+
+### `GET /api/report/{report_id}`
+
+Download the Excel report file by report ID. Returns the file with `Content-Disposition: attachment`.
+
+**Path parameters:** `report_id` (integer).
+
+**Response:** `200 OK` — binary Excel file.
+
+**Errors:** `404 Not Found` if report or file does not exist.
+
+**Example:**
+```bash
+curl -O -J "http://localhost:8000/api/report/1"
+```
+
+### `GET /api/property/{property_id}/reports`
+
+List all reports for a property (newest first). Use a returned `id` with `GET /api/report/{report_id}` to download.
+
+**Path parameters:** `property_id` (UUID).
+
+**Response:** `200 OK` — array of `ReportResponse` (`id`, `property_id`, `report_url`, `created_at`).
+
+---
+
 ## Response Schemas Reference
 
 ### PropertyResponse
@@ -267,11 +294,20 @@ curl -X POST "http://localhost:8000/api/analyze-property/550e8400-e29b-41d4-a716
 | GET | `/api/properties` | properties | List properties (paginated) |
 | POST | `/api/property/{property_id}/images` | images | Upload images for property |
 | POST | `/api/analyze-property/{property_id}` | analysis | Run full analysis, return report URL |
+| GET | `/api/report/{report_id}` | reports | Download report Excel file by ID |
+| GET | `/api/property/{property_id}/reports` | reports | List reports for property (newest first) |
+
+---
+
+## Report download
+
+- **GET /api/report/{report_id}** — Returns the Excel file for the given report ID (`Content-Disposition` attachment).
+- **GET /api/property/{property_id}/reports** — Returns list of `ReportResponse` for that property; use `report_id` with the download endpoint to get the file.
 
 ---
 
 ## Notes
 
-- **Authentication:** Endpoints do not implement auth in this guide; add middleware or dependencies as needed.
-- **Report download:** The analysis endpoint returns a path under `storage/reports/`. To serve files over HTTP, mount a static route (e.g. `StaticFiles`) for `/storage` or expose report URLs via a separate download endpoint that reads from that path.
+- **Rate limiting:** Default `200/minute` per client (configurable via `RATE_LIMIT_DEFAULT`). Uses SlowAPI when installed.
+- **Authentication:** Optional API key auth: set `AUTH_ENABLED=true` and `API_KEY=your-secret` in `.env`; then use `X-API-Key` header. Use `Depends(optional_api_key)` from `app.auth.dependencies` on routes to protect them.
 - **Background pipeline:** Uploading images triggers a Celery chain (image_processing → ai_detection → report_generation). Reports may appear asynchronously; the synchronous way to get a report immediately is `POST /api/analyze-property/{property_id}`.

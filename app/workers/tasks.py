@@ -16,7 +16,7 @@ from app.ai.detection_service import (
 )
 from app.ai.types import DetectionResult
 from app.database.session import AsyncSessionLocal
-from app.financial_engine.engine import AssetInput, compute_financial_breakdown
+from app.financial_engine.engine import assets_from_deduplicated, compute_financial_breakdown
 from app.models.property import Detection, Image, Property, Report
 from app.report_generator.excel_report import generate_excel_report
 from app.rules_engine.deduplication import deduplicate_assets
@@ -94,9 +94,7 @@ async def _generate_report_for_property(session: AsyncSession, property_id: uuid
     labels = [ac.normalized_label for ac in asset_classifications]
     deduped = deduplicate_assets(labels)
 
-    assets_inputs = [
-        AssetInput(name=label, quantity=count, unit_replacement_cost=1) for label, count in deduped
-    ]
+    assets_inputs = assets_from_deduplicated(deduped, default_unit_cost=1)
 
     improvement_basis = property_obj.improvement_basis or 0
     financial_breakdown = compute_financial_breakdown(assets_inputs, improvement_basis=improvement_basis)
@@ -135,7 +133,14 @@ def enqueue_full_pipeline(property_id: str) -> None:
     ).apply_async()
 
 
-@celery.task(name="ai_detection.run", queue="ai_detection")
+@celery.task(
+    name="ai_detection.run",
+    queue="ai_detection",
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    retry_jitter=True,
+)
 def run_ai_detection_task(property_id: str) -> str:
     async def _inner() -> str:
         async with AsyncSessionLocal() as session:
@@ -145,7 +150,14 @@ def run_ai_detection_task(property_id: str) -> str:
     return asyncio.run(_inner())
 
 
-@celery.task(name="report_generation.generate", queue="report_generation")
+@celery.task(
+    name="report_generation.generate",
+    queue="report_generation",
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    retry_jitter=True,
+)
 def generate_report_task(property_id: str) -> str:
     async def _inner() -> str:
         async with AsyncSessionLocal() as session:

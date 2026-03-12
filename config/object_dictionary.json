@@ -1,0 +1,22 @@
+{
+  "mirror": {
+    "canonical_label": "mirror",
+    "category_hint": "personal_property",
+    "typical_life_years": 5
+  },
+  "cabinet": {
+    "canonical_label": "cabinet",
+    "category_hint": "personal_property",
+    "typical_life_years": 5
+  },
+  "door": {
+    "canonical_label": "door",
+    "category_hint": "structural",
+    "typical_life_years": 39
+  },
+  "sink": {
+    "canonical_label": "sink",
+    "category_hint": "personal_property",
+    "typical_life_years": 5
+  }
+}
